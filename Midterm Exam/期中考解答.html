@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>嵌入式程式設計(選擇題) - 標準答案總表</title>
+    <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --accent-color: #2563eb;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success-color: #16a34a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .badge-warning {
+            background-color: #fef3c7;
+            color: #d97706;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 25px;
+            border: 1px solid #fde68a;
+        }
+
+        .answer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .answer-card {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .answer-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-color: var(--accent-color);
+        }
+
+        .q-num {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .q-ans {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--success-color);
+        }
+
+        .actions {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            background-color: var(--accent-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        @media print {
+            body {
+                background: #fff;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                padding: 0;
+            }
+            .btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>嵌入式程式設計 (選擇題) 標準答案總表</h1>
+        <p>總計 25 題，每題 2 分，滿分 50 分</p>
+    </header>
+
+    <div class="badge-warning">
+        🔒 教師內部使用／標準答案核對專用
+    </div>
+
+    <div class="answer-grid" id="answerGrid"></div>
+
+    <div class="actions">
+        <button type="button" class="btn" onclick="window.print()">列印 / 存成 PDF 答案卷</button>
+    </div>
+</div>
+
+<script>
+    const answerData = [
+        { q: 1, ans: "D" }, { q: 2, ans: "A" }, { q: 3, ans: "C" }, { q: 4, ans: "C" }, { q: 5, ans: "A" },
+        { q: 6, ans: "D" }, { q: 7, ans: "B" }, { q: 8, ans: "B" }, { q: 9, ans: "D" }, { q: 10, ans: "C" },
+        { q: 11, ans: "C" }, { q: 12, ans: "C" }, { q: 13, ans: "B" }, { q: 14, ans: "C" }, { q: 15, ans: "D" },
+        { q: 16, ans: "B" }, { q: 17, ans: "B" }, { q: 18, ans: "C" }, { q: 19, ans: "B" }, { q: 20, ans: "D" },
+        { q: 21, ans: "A" }, { q: 22, ans: "B" }, { q: 23, ans: "B" }, { q: 24, ans: "B" }, { q: 25, ans: "D" }
+    ];
+
+    function renderAnswers() {
+        const grid = document.getElementById("answerGrid");
+        let html = "";
+        answerData.forEach(item => {
+            html += `
+                <div class="answer-card">
+                    <div class="q-num">第 ${item.q} 題</div>
+                    <div class="q-ans">${item.ans}</div>
+                </div>
+            `;
+        });
+        grid.innerHTML = html;
+    }
+
+    window.onload = renderAnswers;
+</script>
+
+</body>
+</html>
