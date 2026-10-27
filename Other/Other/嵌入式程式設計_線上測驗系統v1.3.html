@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>嵌入式程式設計(選擇題) 線上測驗系統</title>
+    <!-- 引入 html2pdf.js 用於支援中文 PDF 匯出 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success-color: #16a34a;
+            --danger-color: #dc2626;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .student-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+        }
+
+        .form-group input {
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .alert-box {
+            display: none;
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .alert-error {
+            background-color: #fef2f2;
+            color: var(--danger-color);
+            border: 1px solid #fecaca;
+        }
+
+        .question-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 18px;
+            background: #fff;
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .question-card:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .question-card.unanswered-error {
+            border: 2px solid var(--danger-color);
+            background: #fff5f5;
+        }
+
+        .question-title {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 12px;
+            white-space: pre-line;
+        }
+
+        .code-block {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 0.9rem;
+            margin: 10px 0 14px 0;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+        }
+
+        .option-label:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .option-label input[type="radio"] {
+            margin-top: 4px;
+            transform: scale(1.15);
+            accent-color: var(--primary-color);
+        }
+
+        .actions {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+        }
+
+        .btn-success:hover {
+            background-color: #15803d;
+        }
+
+        .btn-secondary {
+            background-color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background-color: #334155;
+        }
+
+        /* 成績單樣式 */
+        #result-section {
+            display: none;
+            margin-top: 30px;
+            border-top: 2px solid var(--border-color);
+            padding-top: 30px;
+        }
+
+        #report-card {
+            background: #ffffff;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 25px;
+        }
+
+        .report-header {
+            text-align: center;
+            border-bottom: 2px solid #1e293b;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .report-header h2 {
+            font-size: 1.6rem;
+            color: #1e293b;
+        }
+
+        .report-meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            background: #f8fafc;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .score-highlight {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.95rem;
+        }
+
+        .report-table th, .report-table td {
+            border: 1px solid #cbd5e1;
+            padding: 10px 12px;
+            text-align: center;
+        }
+
+        .report-table th {
+            background-color: #f1f5f9;
+            font-weight: 700;
+        }
+
+        .status-correct {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .status-wrong {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .student-info, .report-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>嵌入式程式設計(選擇題) 線上測驗</h1>
+        <p>一、選擇題（共 25 題，每題 2 分，共 50 分）</p>
+    </header>
+
+    <div id="alert-box" class="alert-box alert-error"></div>
+
+    <!-- 成績單區塊 -->
+    <div id="result-section">
+        <div id="report-card">
+            <div class="report-header">
+                <h2>嵌入式程式設計(選擇題) 測驗成績單</h2>
+                <p style="color:#64748b; font-size:0.9rem; margin-top:4px;">（本成績單僅顯示作答紀錄與批改結果，不公布標準答案）</p>
+            </div>
+            <div class="report-meta">
+                <div><strong>姓名：</strong><span id="res-name"></span></div>
+                <div><strong>學號：</strong><span id="res-id"></span></div>
+                <div><strong>測驗時間：</strong><span id="res-time"></span></div>
+                <div><strong>總分：</strong><span id="res-score" class="score-highlight"></span> / 50 分</div>
+                <div><strong>答對題數：</strong><span id="res-correct"></span> / 25 題</div>
+            </div>
+
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>題號</th>
+                        <th>您的作答</th>
+                        <th>結果</th>
+                        <th>得分</th>
+                    </tr>
+                </thead>
+                <tbody id="report-tbody"></tbody>
+            </table>
+        </div>
+
+        <div class="actions">
+            <button type="button" class="btn btn-success" onclick="downloadTXT()">下載 TXT 成績單</button>
+            <button type="button" class="btn btn-secondary" onclick="downloadPDF()">下載 PDF 成績單</button>
+            <button type="button" class="btn" onclick="toggleQuestionsView()" id="toggle-q-btn">查看原試卷題目</button>
+        </div>
+    </div>
+
+    <!-- 測驗作答區 -->
+    <div id="quiz-area">
+        <div class="student-info">
+            <div class="form-group">
+                <label for="student-id">學號 (Student ID) *</label>
+                <input type="text" id="student-id" placeholder="請輸入學號">
+            </div>
+            <div class="form-group">
+                <label for="student-name">姓名 (Full Name) *</label>
+                <input type="text" id="student-name" placeholder="請輸入姓名">
+            </div>
+        </div>
+
+        <!-- 題目動態隨機渲染容器 -->
+        <div id="questions-container"></div>
+
+        <div class="actions" id="submit-area">
+            <button type="button" class="btn" onclick="gradeQuiz()">提交試卷並結算成績</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 完整的 25 題題目資料與標準答案
+    var questionsData = [
+        {
+            id: 1,
+            title: "1. 關於 MicroPython 與 ESP8266 控制板的起源與特性，下列何者正確？",
+            options: { A: "MicroPython 是由微軟公司開發的 Python 3 直譯器", B: "MicroPython 是個在微控器上運作的開放原始碼 Python 3 直譯器，由劍橋大學數學科學中心的物理學家 Damien P. George 在閒暇之餘開發而成", C: "ESP8266 晶片內部只含有 CPU，不包含任何快閃記憶體", D: "ESP8266 只能透過組合語言進行程式編寫" },
+            ans: "D"
+        },
+        {
+            id: 2,
+            title: "2. 關於微控制器(MCU)內部記憶體(SRAM與Flash)的敘述，下列何者錯誤？",
+            options: { A: "SRAM 屬於揮發性(volatile)記憶體，代表資料在斷電後會消失", B: "SRAM 主要作為資料記憶體，用來暫存程式運作中所需的資料", C: "Flash 屬於非揮發性記憶體，代表斷電後資料仍存在", D: "Flash 的容量為 4MB，其中 MicroPython 韌體程式約佔用 3MB，剩下給使用者存放程式碼" },
+            ans: "A"
+        },
+        {
+            id: 3,
+            title: "3. 關於編譯式語言(如C++)、組合語言與直譯式語言(如Python)的執行方式，下列敘述何者正確？",
+            options: { A: "組合語言的原始碼可以直接在處理器上執行，不需要經過組譯", B: "高階語言如 C++ 經由編譯(compile)產生的二進位檔可直接在微控制器上運作", C: "Python 屬於直譯式語言，不需要在電腦或微控器上安裝直譯器即可直接執行", D: "直譯式語言與編譯式語言產生的機器碼完全相同，沒有任何差異" },
+            ans: "C"
+        },
+        {
+            id: 4,
+            title: "4. 在 Windows 系統上安裝 Python3 時，為了方便在命令提示字元(終端機)直接執行 python 或 pip 指令，安裝過程中建議勾選下列哪一個選項？",
+            options: { A: "Add Python 3.x to PATH", B: "Install launcher for all users", C: "tcl/tk and IDLE", D: "Python test suite" },
+            ans: "C"
+        },
+        {
+            id: 5,
+            title: "5. 關於 Wemos D1 mini 控制板的硬體構造，下列敘述何者正確？",
+            options: { A: "板子上的 USB 序列通訊 IC 採用的是 CP2102 晶片，電腦連接時不需要安裝驅動程式", B: "板子上的直流電壓調節器(IC)會將電腦 USB 輸入的 5V 電壓轉換成 3.3V 供模組使用", C: "Wemos D1 mini 板子上內建了一個 Flash 開關與一個重置開關", D: "Wemos D1 mini 的內建 LED 是接在第 16 腳" },
+            ans: "A"
+        },
+        {
+            id: 6,
+            title: "6. 有一顆碳膜電阻，其色環依序為「紅、紅、橙、金」，請問其阻值與誤差範圍為何？",
+            options: { A: "220 Ω, ±5%", B: "2.2K Ω, ±10%", C: "22K Ω, ±10%", D: "220K Ω, ±5%" },
+            ans: "D"
+        },
+        {
+            id: 7,
+            title: "7. 關於電子零件「電容」的敘述，下列何者錯誤？",
+            options: { A: "電容器簡稱電容，其單位是法拉(Farad，簡寫成F)", B: "陶瓷電容表面標示「104」時，代表其容量為 10 × 10⁴ pF，換算後等於 100nF", C: "電解電容具有極性，短腳通常是接地腳(負極)，安裝時需注意正負方向", D: "電容在電路中主要用來放大電流，無法吸收電源瞬間變化的雜訊" },
+            ans: "B"
+        },
+        {
+            id: 8,
+            title: "8. 關於「二極體」與「LED(發光二極體)」的特性，下列何者正確？",
+            options: { A: "二極體是一種雙向導通的半導體元件", B: "LED 長腳為陽極(+)、短腳或有切口的一邊為陰極(-)，若接反了則不會發光", C: "二極體和 LED 接腳都沒有區分極性，怎麼接都可以導通", D: "LED 內部不需要串聯限流電阻，直接連接 5V 電源也不會損壞" },
+            ans: "B"
+        },
+        {
+            id: 9,
+            title: "9. 使用萬用電錶(三用電錶)測量電路時，下列操作步驟何者正確？",
+            options: { A: "測量電阻值時，應將檔位切換到歐姆(Ω)檔，且手指不要碰觸元件或探針的金屬部位", B: "測量電壓時，可以隨時一邊轉動旋鈕切換檔位，一邊拿著探針量測", C: "測量電流時，探針應直接「並聯」在負荷兩端", D: "測量電流時，紅色探針應接在 V 專用插孔中" },
+            ans: "D"
+        },
+        {
+            id: 10,
+            title: "10. 關於麵包板內部導通結構的敘述，下列何者正確？",
+            options: { A: "麵包板正負電源孔(電源軌)在垂直方向是導通的", B: "麵包板中間中央分隔溝兩側的 5 個接孔(例如 a, b, c, d, e)在垂直方向是互相導通的", C: "麵包板所有接孔在水平與垂直方向全部都是互通的", D: "零件可以直接焊接在麵包板的插孔上固定" },
+            ans: "C"
+        },
+        {
+            id: 11,
+            title: "11. 在 MicroPython 中，若要將控制板上的第 2 腳(GPIO2)設定為「輸出」模式，並輸出高電位(點亮或關閉視電路而定)，下列程式碼何者正確？",
+            options: { A: "from machine import Pin; p2 = Pin(2, Pin.IN)", B: "from machine import Pin; p2 = Pin(2, Pin.OUT); p2.value(1)", C: "import machine; p2 = machine.Pin(2, Pin.INPUT)", D: "from machine import Signal; p2 = Signal(2)" },
+            ans: "C"
+        },
+        {
+            id: 12,
+            title: "12. 執行已知迴圈次數的敘述時，在 Python 中通常使用哪一種迴圈結構？",
+            options: { A: "if 迴圈", B: "for 迴圈", C: "def 迴圈", D: "try 迴圈" },
+            ans: "C"
+        },
+        {
+            id: 13,
+            title: "13. 在命令提示字元(終端機)中，若想將電腦中的 blink.py 檔案上傳並儲存到 ESP8266 控制板的快閃記憶體中，應使用下列哪一個 ampy 指令參數？",
+            options: { A: "run", B: "get", C: "put", D: "ls" },
+            ans: "B"
+        },
+        {
+            id: 14,
+            title: "14. 根據歐姆定律公式 V=I×R，若電源電壓為 3.3V，LED 順向壓降為 2V，期望電流為 10mA(0.01A)，則串聯的限流電阻 R 阻值應為多少？",
+            options: { A: "11Ω", B: "110Ω", C: "330Ω", D: "1KΩ" },
+            ans: "C"
+        },
+        {
+            id: 15,
+            title: "15. 關於開關電路與上拉/下拉電阻的敘述，下列何者錯誤？",
+            options: { A: "電阻一端接電源稱為上拉電阻，一端接地稱為下拉電阻", B: "如果沒有上拉或下拉電阻，當開關按下時正電源與接地直接相連，會造成短路", C: "Wemos D1 mini 控制板的 GPIO0、GPIO2 內建有上拉電阻", D: "啟用晶片內部上拉電阻的接腳，當開關被按下(接地)時，讀取到的輸入值為高電位 1" },
+            ans: "D"
+        },
+        {
+            id: 16,
+            title: "16. 機械式開關在切換時會產生忽高忽低的彈跳現象，通常持續時間大約在多少範圍之內？",
+            options: { A: "2~30 毫秒(ms)", B: "2~30 秒(s)", C: "1~2 分鐘(min)", D: "100~500 微秒(µs)" },
+            ans: "B"
+        },
+        {
+            id: 17,
+            title: "17. 在 Python 程式設計中，關於變數有效範圍(Scope)的敘述，下列何者正確？",
+            options: { A: "在函式內部宣告的變數稱為全域變數，可在程式任何地方被存取", B: "在函式外面定義的變數稱為區域變數", C: "若要在函式內部修改全域變數的值，必須先使用 global 關鍵字宣告", D: "區域變數在函式執行結束後會永遠保留在記憶體中不會消失" },
+            ans: "B"
+        },
+        {
+            id: 18,
+            title: "18. 關於 Python 的「列表(List)」與「元組(Tuple)」資料類型，下列何者正確？",
+            options: { A: "列表使用方括號 [] 包圍，其內容元素可以被修改", B: "元組使用小括號 () 包圍，其元素值可以隨時透過索引進行修改", C: "列表一旦建立後，絕對不能新增或刪除任何元素", D: "列表不支援負數索引(如 [-1])" },
+            ans: "C"
+        },
+        {
+            id: 19,
+            title: "19. 關於 Python 的字典(Dictionary)資料類型，下列敘述何者錯誤？",
+            options: { A: "字典是以「名稱(Key) / 值(Value)」對的形式來儲存資料", B: "可以透過 SoC.get('key') 來取得對應的值，若鍵不存在則會傳回 None 而不會引發錯誤", C: "字典的鍵(Key)只能是字串，不能是數字或元組", D: "可以使用 del 指令或 pop() 方法刪除字典中的指定元素" },
+            ans: "B"
+        },
+        {
+            id: 20,
+            title: "20. 將二進位數字 0110 轉換成十進位數字，其結果為何？",
+            options: { A: "4", B: "5", C: "6", D: "7" },
+            ans: "D"
+        },
+        {
+            id: 21,
+            title: "21. 執行以下 MicroPython 程式碼後，終端機的輸出結果為何？",
+            code: "data = [10, 20, 30, 40, 50]\nprint(data[-3:1:-1])",
+            options: { A: "[30, 20]", B: "[30, 40]", C: "[40, 30]", D: "[50, 40, 30]" },
+            ans: "A"
+        },
+        {
+            id: 22,
+            title: "22. 關於 Python 字典(Dictionary)與列表(List)在 MicroPython 記憶體與運作上的特性，下列敘述何者正確？",
+            options: { A: "列表的索引只能是整數，而字典的鍵(Key)必須是字串，不能是其他類型", B: "字典透過鍵查詢資料的效率在資料量大時比列表依序尋找快，但會佔用較多的記憶體空間", C: "執行 SoC.update(pins) 時，若 pins 中有與 SoC 重複的鍵，原有的值會被保留而不會被覆蓋", D: "列表與字典都屬於內容不可變動(immutable)類型，無法在建立後新增或修改元素" },
+            ans: "B"
+        },
+        {
+            id: 23,
+            title: "23. 在 ESP8266 上使用 PWM 模擬類比電壓輸出時，若建立 PWM 物件 pwm2 = PWM(Pin(2), freq=1000, duty=512)，下列敘述何者正確？",
+            options: { A: "工作頻率為 500Hz，工作週期佔比為 50%", B: "工作頻率為 1000Hz，工作週期數值 512 代表佔比約為 50%(因最大值為 1023)", C: "工作週期數值 512 代表輸出電壓恆為 5.0V", D: "此指令會自動將 GPIO2 轉為數位輸入模式" },
+            ans: "B"
+        },
+        {
+            id: 24,
+            title: "24. 關於旋轉編碼器(Rotary Encoder)與程式判別旋轉方向的原理，下列敘述何者正確？",
+            options: { A: "編碼器旋轉時，CLK 與 DT 接腳會同時恆定輸出高電位，不會產生脈衝", B: "程式在迴圈中透過偵測 CLK 電位改變(now != prev)，若此時 DT 的電位與 CLK 不同，代表是順時針旋轉", C: "旋轉編碼器不需要連接接地(GND)，只需要連接正電源", D: "旋轉編碼器內部的開關屬於常閉(N.C.)型式，未轉動時全部導通" },
+            ans: "B"
+        },
+        {
+            id: 25,
+            title: "25. 關於 WS2812 數位彩色 LED 燈條與 neopixel 模組的操作，下列敘述何者錯誤？",
+            options: { A: "初始化宣告時需指定資料接腳與 LED 數量，例如 np = neopixel.NeoPixel(Pin(4), 8)", B: "設定某一顆 LED 顏色的語法為 np[0] = (255, 127, 0)", C: "每次修改完 LED 顏色陣列後，必須呼叫 np.write() 才會真正將資料送出並讓燈條顯示", D: "WS2812 燈條每一個 LED 晶片只能顯示相同的顏色，無法對單一 LED 進行個別獨立控制" },
+            ans: "D"
+        }
+    ];
+
+    var STORAGE_KEY = "embedded_quiz_tested_records_v4";
+    var memoryRecords = [];
+    var currentReportData = null;
+
+    // 洗牌演算法 (Fisher-Yates Shuffle)
+    function shuffleArray(array) {
+        var currentIndex = array.length, temporaryValue, randomIndex;
+        while (currentIndex !== 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+        }
+        return array;
+    }
+
+    // 初始化渲染並自動隨機打亂題目順序
+    function renderQuiz() {
+        var shuffledQuestions = shuffleArray([...questionsData]);
+        var container = document.getElementById("questions-container");
+        var html = "";
+
+        shuffledQuestions.forEach(function(item, index) {
+            var displayNum = index + 1; // 畫面顯示題號 (1~25)
+            var originalId = item.id;   // 原始題號，用來綁定正確答案
+            
+            html += '<div class="question-card" id="card-q' + originalId + '" data-orig-id="' + originalId + '">';
+            html += '<div class="question-title">' + displayNum + '. ' + item.title.substring(item.title.indexOf('.') + 1) + '</div>';
+            
+            if (item.code) {
+                html += '<div class="code-block">' + item.code + '</div>';
+            }
+
+            html += '<div class="options-list">';
+            for (var key in item.options) {
+                html += '<label class="option-label">';
+                html += '<input type="radio" name="q' + originalId + '" value="' + key + '">';
+                html += '<span>(' + key + ') ' + item.options[key] + '</span>';
+                html += '</label>';
+            }
+            html += '</div></div>';
+        });
+
+        container.innerHTML = html;
+    }
+
+    function getRecords() {
+        try {
+            var raw = localStorage.getItem(STORAGE_KEY);
+            return raw ? JSON.parse(raw) : memoryRecords;
+        } catch (err) {
+            return memoryRecords;
+        }
+    }
+
+    function saveTestRecord(studentId, studentName) {
+        var records = getRecords();
+        var newRec = {
+            id: studentId.trim().toLowerCase(),
+            name: studentName.trim().toLowerCase(),
+            timestamp: new Date().toISOString()
+        };
+        records.push(newRec);
+        memoryRecords = records;
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        } catch (err) {}
+    }
+
+    function isDuplicateTest(studentId, studentName) {
+        var records = getRecords();
+        var normId = studentId.trim().toLowerCase();
+        var normName = studentName.trim().toLowerCase();
+        for (var i = 0; i < records.length; i++) {
+            var r = records[i];
+            if ((r.id === normId && r.name === normName) || r.id === normId || r.name === normName) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function showAlert(msg) {
+        var alertBox = document.getElementById("alert-box");
+        alertBox.textContent = msg;
+        alertBox.style.display = "block";
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function gradeQuiz() {
+        var alertBox = document.getElementById("alert-box");
+        alertBox.style.display = "none";
+
+        var studentId = document.getElementById("student-id").value.trim();
+        var studentName = document.getElementById("student-name").value.trim();
+
+        if (!studentId || !studentName) {
+            showAlert("請先在上方完整填寫「學號」與「姓名」！");
+            document.getElementById("student-id").focus();
+            return;
+        }
+
+        // 檢查是否每題皆已作答
+        var unanswered = [];
+        for (var q = 1; q <= 25; q++) {
+            var card = document.getElementById("card-q" + q);
+            var checked = document.querySelector('input[name="q' + q + '"]:checked');
+            if (!checked) {
+                unanswered.push(q);
+                if (card) card.classList.add("unanswered-error");
+            } else {
+                if (card) card.classList.remove("unanswered-error");
+            }
+        }
+
+        if (unanswered.length > 0) {
+            showAlert("尚有題目未作答，請完成所有題目後再提交！");
+            var firstUnansweredCard = document.getElementById("card-q" + unanswered[0]);
+            if (firstUnansweredCard) {
+                firstUnansweredCard.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+            return;
+        }
+
+        if (isDuplicateTest(studentId, studentName)) {
+            showAlert("警告：學號「" + studentId + "」或姓名「" + studentName + "」已經參加過本測驗，系統限制重複測試！");
+            return;
+        }
+
+        var score = 0;
+        var correctCount = 0;
+        var details = [];
+
+        var answerKey = {};
+        questionsData.forEach(function(item) {
+            answerKey[item.id] = item.ans;
+        });
+
+        for (var i = 1; i <= 25; i++) {
+            var selected = document.querySelector('input[name="q' + i + '"]:checked');
+            var userAns = selected ? selected.value : "未作答";
+            var isCorrect = (userAns === answerKey[i]);
+            var pts = isCorrect ? 2 : 0;
+            if (isCorrect) {
+                score += 2;
+                correctCount += 1;
+            }
+            details.push({
+                id: i,
+                userAns: userAns,
+                isCorrect: isCorrect,
+                pts: pts
+            });
+        }
+
+        saveTestRecord(studentId, studentName);
+
+        var inputs = document.querySelectorAll("#quiz-area input");
+        for (var j = 0; j < inputs.length; j++) {
+            inputs[j].disabled = true;
+        }
+        document.getElementById("submit-area").style.display = "none";
+
+        var nowStr = new Date().toLocaleString("zh-TW", { hour12: false });
+        currentReportData = {
+            studentId: studentId,
+            studentName: studentName,
+            time: nowStr,
+            score: score,
+            correctCount: correctCount,
+            details: details
+        };
+
+        document.getElementById("res-name").textContent = studentName;
+        document.getElementById("res-id").textContent = studentId;
+        document.getElementById("res-time").textContent = nowStr;
+        document.getElementById("res-score").textContent = score;
+        document.getElementById("res-correct").textContent = correctCount;
+
+        var tbody = document.getElementById("report-tbody");
+        var rowsHtml = "";
+        for (var k = 0; k < details.length; k++) {
+            var d = details[k];
+            rowsHtml += "<tr>" +
+                "<td>第 " + d.id + " 題</td>" +
+                "<td>" + d.userAns + "</td>" +
+                "<td class='" + (d.isCorrect ? "status-correct" : "status-wrong") + "'>" +
+                    (d.isCorrect ? "✔ 答對" : "✘ 答錯") +
+                "</td>" +
+                "<td>" + d.pts + " 分</td>" +
+            "</tr>";
+        }
+        tbody.innerHTML = rowsHtml;
+
+        document.getElementById("quiz-area").style.display = "none";
+        var resultSection = document.getElementById("result-section");
+        resultSection.style.display = "block";
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function toggleQuestionsView() {
+        var quizArea = document.getElementById("quiz-area");
+        var btn = document.getElementById("toggle-q-btn");
+        if (quizArea.style.display === "none") {
+            quizArea.style.display = "block";
+            btn.textContent = "隱藏原試卷題目";
+        } else {
+            quizArea.style.display = "none";
+            btn.textContent = "查看原試卷題目";
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+    }
+
+    function downloadTXT() {
+        if (!currentReportData) return;
+        var d = currentReportData;
+        var lines = [];
+        lines.push("==================================================");
+        lines.push("         嵌入式程式設計(選擇題) 測驗成績單        ");
+        lines.push("==================================================");
+        lines.push("學生姓名：" + d.studentName);
+        lines.push("學生學號：" + d.studentId);
+        lines.push("測驗時間：" + d.time);
+        lines.push("測驗總分：" + d.score + " / 50 分 (答對 " + d.correctCount + " / 25 題)");
+        lines.push("--------------------------------------------------");
+        lines.push("題號\t您的作答\t批改結果\t得分");
+        lines.push("--------------------------------------------------");
+        for (var i = 0; i < d.details.length; i++) {
+            var item = d.details[i];
+            var qNum = item.id < 10 ? "0" + item.id : "" + item.id;
+            var status = item.isCorrect ? "答對" : "答錯";
+            lines.push("第" + qNum + "題\t   " + item.userAns + "\t\t  " + status + "\t\t " + item.pts + "分");
+        }
+        lines.push("==================================================");
+        lines.push("※ 備註：本成績單不顯示標準答案。");
+
+        var crlf = String.fromCharCode(13, 10);
+        var blob = new Blob([lines.join(crlf)], { type: "text/plain;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "嵌入式成績單_" + d.studentId + "_" + d.studentName + ".txt";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function downloadPDF() {
+        if (!currentReportData) return;
+        var d = currentReportData;
+        var element = document.getElementById("report-card");
+        if (typeof html2pdf !== "undefined") {
+            var opt = {
+                margin:       10,
+                filename:     "嵌入式成績單_" + d.studentId + "_" + d.studentName + ".pdf",
+                image:        { type: "jpeg", quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: "mm", format: "a4", orientation: "portrait" }
+            };
+            html2pdf().set(opt).from(element).save();
+        } else {
+            window.print();
+        }
+    }
+
+    // 網頁載入時自動執行洗牌並渲染題目
+    window.onload = function() {
+        renderQuiz();
+    };
+</script>
+
+</body>
+</html>
